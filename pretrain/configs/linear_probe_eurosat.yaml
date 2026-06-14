@@ -1,0 +1,37 @@
+seed: 42
+
+name: "LinearProbe_EuroSAT_{backbone_name}"
+
+# Path to a CNN-JEPA pre-trained checkpoint (.ckpt).
+# Set to null to use ImageNet supervised weights (backbone.pretrained_weights must be "imagenet").
+checkpoint_path: null   # e.g. "artifacts/pretrain_lightly/ijepacnn/epoch=99-step=....ckpt"
+
+backbone:
+  name: "resnet50"
+  pretrained_weights: "imagenet"  # "imagenet" | null  (used only when checkpoint_path is null)
+  kwargs:
+    global_pool: 'avg'  # keep global average pooling for linear probing
+
+num_classes: 10   # EuroSAT has 10 land-use classes
+input_size: 224
+
+data:
+  root: "EuroSAT"   # relative or absolute path to the EuroSAT directory
+  num_workers: 4
+
+trainer:
+  max_epochs: 50
+  devices: "auto"
+  accelerator: "gpu"
+  precision: "bf16"
+
+optimizer:
+  batch_size: 64
+  lr: 0.001
+  weight_decay: 0.0
+
+# disable hydra outputs
+hydra:
+  output_subdir: null
+  run:
+    dir: .
