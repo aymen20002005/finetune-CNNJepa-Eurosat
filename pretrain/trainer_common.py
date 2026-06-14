@@ -10,13 +10,17 @@ import time
 from typing import Callable
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
-from lightning_lite.utilities.rank_zero import _get_rank
 import torch
 import torchvision
 import torch.nn as nn
 import timm
 import wandb
 import matplotlib.pyplot as plt
+
+def _get_rank():
+    if torch.distributed.is_available() and torch.distributed.is_initialized():
+        return torch.distributed.get_rank()
+    return 0
 
 from lightly.data import LightlyDataset
 from lightly.transforms.utils import IMAGENET_NORMALIZE
@@ -29,7 +33,6 @@ from pretrain.online_classification_benchmark import OnlineLinearClassificationB
 import utils
 
 from data.imagenette import Imagenette
-from data.cached_imagenet import CachedImageNet
 from data.hdf5_imagefolder import HDF5ImageFolder
 from data.eurosat import EuroSATDataset
 
@@ -348,8 +351,8 @@ def main_pretrain(cfg: DictConfig, lightly_model: LightlyModel):
     if world_size is not None:
         world_size = int(world_size)
     print("World size:", world_size, flush=True)
-    if world_size == 1:
-        strategy = None
+    if world_size is None or world_size == 1:
+        strategy = "auto"
     else:
         strategy = pl.strategies.DDPStrategy(find_unused_parameters=False)
 

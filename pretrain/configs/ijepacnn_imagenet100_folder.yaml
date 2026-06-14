@@ -41,7 +41,7 @@ trainer:
   devices: "auto"
   accelerator: "gpu"
   precision: "bf16"
-  accumulate_grad_batches: null
+  accumulate_grad_batches: 1
   overfit_batches: 0.0
 
 optimizer:
